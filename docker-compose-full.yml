@@ -1,0 +1,51 @@
+
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/snapshots:/app/snapshots
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - REDIS_BROKER=redis://redis:6379/0
+
+  worker:
+    build:
+      context: ./backend
+    command: celery -A app.celery_worker worker --loglevel=info
+    volumes:
+      - ./backend/snapshots:/app/snapshots
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - REDIS_BROKER=redis://redis:6379/0
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
