@@ -1,10 +1,15 @@
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
 from app import tasks, database, models, schemas
 from app.utils.export import create_export_archive
+from app.config import get_settings
 import os
 import json
 import csv
@@ -12,14 +17,66 @@ from io import StringIO, BytesIO
 import zipfile
 from datetime import datetime, timedelta
 from typing import Optional
+import logging
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="Archive Hub API", version="1.0.0")
-app.add_middleware(
-    CORSMiddleware, 
-    allow_origins=["*"], 
-    allow_methods=["*"], 
-    allow_headers=["*"]
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Get settings
+settings = get_settings()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize Redis for rate limiting
+    redis = await FastAPILimiter.init(
+        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
+        prefix="fastapi-limiter"
+    )
+    yield
+    # Cleanup Redis connection
+    await redis.close()
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    lifespan=lifespan
 )
+
+# Add middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000
+)
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"],  # Update with actual allowed hosts
+)
+
+# Add middleware for security headers
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+# Add health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": settings.VERSION}
 
 # Create tables
 models.Base.metadata.create_all(bind=database.engine)
