@@ -1,11 +1,23 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Search, Calendar, Clock, ArrowLeft, ExternalLink } from "lucide-react";
+import {
+  Archive,
+  Search,
+  Calendar,
+  Clock,
+  ArrowLeft,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const Browse = () => {
@@ -20,43 +32,43 @@ const Browse = () => {
       size: "2.4 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
+      preview: "/placeholder.svg",
     },
     {
       timestamp: "2024-06-15T14:22:00Z",
       size: "2.1 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
+      preview: "/placeholder.svg",
     },
     {
       timestamp: "2024-06-10T09:15:00Z",
       size: "1.9 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
+      preview: "/placeholder.svg",
     },
     {
       timestamp: "2024-06-05T16:45:00Z",
       size: "2.0 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
+      preview: "/placeholder.svg",
     },
     {
       timestamp: "2024-05-28T11:30:00Z",
       size: "1.8 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
+      preview: "/placeholder.svg",
     },
     {
       timestamp: "2024-05-20T13:12:00Z",
       size: "2.2 MB",
       status: "completed",
       title: "Homepage - Example.com",
-      preview: "/placeholder.svg"
-    }
+      preview: "/placeholder.svg",
+    },
   ];
 
   const years = ["2024", "2023", "2022", "2021"];
@@ -66,7 +78,7 @@ const Browse = () => {
       toast({
         title: "URL Required",
         description: "Please enter a URL to search",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -93,7 +105,9 @@ const Browse = () => {
                 Back
               </Button>
               <Archive className="h-6 w-6 text-blue-600" />
-              <h1 className="text-xl font-bold text-slate-900">Browse Archives</h1>
+              <h1 className="text-xl font-bold text-slate-900">
+                Browse Archives
+              </h1>
             </div>
           </div>
         </div>
@@ -118,9 +132,12 @@ const Browse = () => {
                 value={searchUrl}
                 onChange={(e) => setSearchUrl(e.target.value)}
                 className="flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               />
-              <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleSearch}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>
@@ -137,9 +154,7 @@ const Browse = () => {
                   <Calendar className="h-5 w-5" />
                   Timeline for {searchUrl}
                 </CardTitle>
-                <CardDescription>
-                  Browse snapshots by year
-                </CardDescription>
+                <CardDescription>Browse snapshots by year</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2 flex-wrap">
@@ -148,7 +163,11 @@ const Browse = () => {
                       key={year}
                       variant={selectedYear === year ? "default" : "outline"}
                       onClick={() => setSelectedYear(year)}
-                      className={selectedYear === year ? "bg-blue-600 hover:bg-blue-700" : ""}
+                      className={
+                        selectedYear === year
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : ""
+                      }
                     >
                       {year}
                     </Button>
@@ -170,7 +189,11 @@ const Browse = () => {
 
               <div className="grid gap-6">
                 {snapshots.map((snapshot, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleViewSnapshot(snapshot)}>
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleViewSnapshot(snapshot)}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start gap-6">
                         {/* Thumbnail */}
@@ -192,15 +215,20 @@ const Browse = () => {
                               <div className="flex items-center gap-4 text-sm text-slate-600 mb-3">
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
-                                  {new Date(snapshot.timestamp).toLocaleString()}
+                                  {new Date(
+                                    snapshot.timestamp,
+                                  ).toLocaleString()}
                                 </div>
-                                <Badge variant="secondary">{snapshot.size}</Badge>
+                                <Badge variant="secondary">
+                                  {snapshot.size}
+                                </Badge>
                                 <Badge className="bg-green-100 text-green-800">
                                   {snapshot.status}
                                 </Badge>
                               </div>
                               <p className="text-slate-600 text-sm">
-                                Archived snapshot containing full page content, styles, and assets
+                                Archived snapshot containing full page content,
+                                styles, and assets
                               </p>
                             </div>
                             <Button size="sm" className="ml-4">
@@ -225,7 +253,10 @@ const Browse = () => {
                     <p className="text-slate-600 mb-6">
                       No archived versions found for this URL in {selectedYear}
                     </p>
-                    <Button onClick={() => navigate("/")} className="bg-blue-600 hover:bg-blue-700">
+                    <Button
+                      onClick={() => navigate("/")}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
                       Archive This Site
                     </Button>
                   </CardContent>
@@ -243,7 +274,8 @@ const Browse = () => {
                 Search the Archive
               </h2>
               <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                Enter a URL above to find all archived snapshots and browse through their timeline
+                Enter a URL above to find all archived snapshots and browse
+                through their timeline
               </p>
               <Button onClick={() => navigate("/")} variant="outline">
                 Go to Homepage

@@ -1,10 +1,11 @@
-
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+
 class ArchiveRequest(BaseModel):
     url: str
+
 
 class SnapshotResponse(BaseModel):
     timestamp: str
@@ -16,14 +17,17 @@ class SnapshotResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ArchiveResponse(BaseModel):
     domain: str
     snapshots: List[SnapshotResponse]
     total: int
 
+
 class BulkExportRequest(BaseModel):
     timestamps: List[str]
     format: str = "zip"  # zip, json, csv
+
 
 class ExportResponse(BaseModel):
     download_url: str

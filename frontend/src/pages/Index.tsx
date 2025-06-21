@@ -1,8 +1,13 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Archive, Search, Globe, History, Database } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -17,16 +22,16 @@ const Index = () => {
       toast({
         title: "Domain Required",
         description: "Please enter a domain to search archives",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     // Clean domain input (remove protocol, www, trailing slashes)
     const cleanDomain = domain
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .replace(/\/.*$/, '')
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .replace(/\/.*$/, "")
       .toLowerCase();
 
     navigate(`/archive/${encodeURIComponent(cleanDomain)}`);
@@ -36,7 +41,7 @@ const Index = () => {
     "example.com",
     "github.com",
     "stackoverflow.com",
-    "wikipedia.org"
+    "wikipedia.org",
   ];
 
   return (
@@ -47,7 +52,9 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Archive className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Web Archive Browser</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                Web Archive Browser
+              </h1>
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -70,8 +77,9 @@ const Index = () => {
             <span className="text-primary block">Archived Web</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-            Search and browse historical snapshots of websites. Travel back in time 
-            to see how websites looked and what content they had at any point in history.
+            Search and browse historical snapshots of websites. Travel back in
+            time to see how websites looked and what content they had at any
+            point in history.
           </p>
 
           {/* Search Input */}
@@ -92,9 +100,9 @@ const Index = () => {
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
                   className="flex-1"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 />
-                <Button 
+                <Button
                   onClick={handleSearch}
                   className="bg-primary hover:bg-primary/90"
                 >
@@ -102,7 +110,7 @@ const Index = () => {
                   Search
                 </Button>
               </div>
-              
+
               {/* Example domains */}
               <div className="flex flex-wrap gap-2 justify-center">
                 <span className="text-sm text-muted-foreground">Try:</span>
@@ -130,7 +138,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Browse historical versions of websites and see how they evolved over time
+                  Browse historical versions of websites and see how they
+                  evolved over time
                 </p>
               </CardContent>
             </Card>
@@ -142,7 +151,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  View full page snapshots including HTML, CSS, and JavaScript as they appeared
+                  View full page snapshots including HTML, CSS, and JavaScript
+                  as they appeared
                 </p>
               </CardContent>
             </Card>
@@ -154,7 +164,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Fast search across millions of archived pages with timeline navigation
+                  Fast search across millions of archived pages with timeline
+                  navigation
                 </p>
               </CardContent>
             </Card>
@@ -199,7 +210,8 @@ const Index = () => {
                   <div>
                     <h3 className="font-semibold mb-2">View Snapshot</h3>
                     <p className="text-sm text-muted-foreground">
-                      Click any snapshot to view the archived page as it appeared
+                      Click any snapshot to view the archived page as it
+                      appeared
                     </p>
                   </div>
                 </div>
@@ -251,7 +263,9 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Web Archive Browser. Built with React and TypeScript.</p>
+            <p>
+              &copy; 2024 Web Archive Browser. Built with React and TypeScript.
+            </p>
           </div>
         </div>
       </footer>

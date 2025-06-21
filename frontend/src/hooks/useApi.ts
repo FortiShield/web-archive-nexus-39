@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { QueryClient, useQuery, useMutation, useQueryClient, QueryObserverOptions, UseMutationOptions } from '@tanstack/react-query';
+import { QueryClient, useQuery, useMutation, useQueryClient, QueryObserverOptions, UseMutationOptions, Query, QueryKey, RetryDelayFunction } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // Define API error types
@@ -11,20 +11,13 @@ export interface ApiError extends Error {
   stack?: string;
 }
 
-// Define API response types
-export interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
-
 // Define API request options
 type ApiRequestOptions<T = any> = {
-  retry?: number;
-  retryDelay?: (attemptIndex: number) => number;
-  staleTime?: number;
-  refetchOnWindowFocus?: boolean;
-  refetchOnReconnect?: boolean;
+  retry?: number | boolean | ((failureCount: number, error: Error) => boolean);
+  retryDelay?: (attemptIndex: number) => number | Promise<number>;
+  staleTime?: number | ((query: Query<unknown, Error, unknown, QueryKey>) => number);
+  refetchOnWindowFocus?: boolean | "always" | ((query: Query<unknown, Error, unknown, QueryKey>) => boolean | "always");
+  refetchOnReconnect?: boolean | "always" | ((query: Query<unknown, Error, unknown, QueryKey>) => boolean | "always");
   gcTime?: number;
   enabled?: boolean;
   onSuccess?: () => void;
@@ -33,45 +26,37 @@ type ApiRequestOptions<T = any> = {
   mutationOptions?: Partial<UseMutationOptions<T, ApiError>>;
 };
 
-// Define API error types
-export interface ApiError extends Error {
-  name: string;
-  message: string;
-  status?: number;
-  data?: any;
-  stack?: string;
-}
-
-// Define API response types
+// Default query options
+const DEFAULT_QUERY_OPTIONS: Partial<QueryObserverOptions> = {
   retry: 2,
-  retryDelay: (attemptIndex: number) => attemptIndex * 1000,
+  retryDelay: (attemptIndex: number, error: Error): number => attemptIndex * 1000,
   staleTime: 5 * 60 * 1000,
   refetchOnWindowFocus: true,
   refetchOnReconnect: true,
   gcTime: 5 * 60 * 1000,
-};
+} as const;
 
 const DEFAULT_MUTATION_OPTIONS: Partial<UseMutationOptions> = {
   retry: 2,
-  retryDelay: (attemptIndex: number) => attemptIndex * 1000,
+  retryDelay: (attemptIndex: number, error: Error): number => attemptIndex * 1000,
   gcTime: 5 * 60 * 1000,
-};
+} as const;
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      retryDelay: (attemptIndex: number) => attemptIndex * 1000,
+      retryDelay: (attemptIndex: number, error: Error): number => attemptIndex * 1000,
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       gcTime: 5 * 60 * 1000,
-    },
+    } as const,
     mutations: {
       retry: 2,
-      retryDelay: (attemptIndex: number) => attemptIndex * 1000,
+      retryDelay: (attemptIndex: number, error: Error): number => attemptIndex * 1000,
       gcTime: 5 * 60 * 1000,
-    },
+    } as const,
   },
 });
 
@@ -95,35 +80,43 @@ export const useApi = () => {
   }, []);
 
   const mutationFn = useCallback(async <T>(
-    mutationFn: () => Promise<T>,
+    mutation: () => Promise<T>,
     options?: ApiRequestOptions<T>
-  ) => {
+  ): Promise<T> => {
     try {
-      const data = await mutationFn();
-      return data;
+      return await mutation();
     } catch (error) {
-      throw error;
+      if (error instanceof Error) {
+        throw error as ApiError;
+      } else {
+        throw new Error('Unknown error');
+      }
     }
   }, []);
 
-  const useQuery = <T>(
+  const useQuery = <T, E extends ApiError = ApiError>(
     queryKey: string[],
     fetchFn: () => Promise<T>,
     options?: ApiRequestOptions<T>
   ) => {
-    return useQuery<T>(
+    const retryDelay: RetryDelayFunction = (attemptIndex: number, error: Error): number => {
+      const delayFn = typeof options?.retryDelay === 'function' ? options.retryDelay : DEFAULT_QUERY_OPTIONS.retryDelay;
+      return typeof delayFn === 'function' ? delayFn(attemptIndex, error) : DEFAULT_QUERY_OPTIONS.retryDelay(attemptIndex, error);
+    };
+
+    return useQuery<T, E>(
       queryKey,
       () => queryFn(queryKey, fetchFn, options),
       {
-        retry: options?.retry ?? 2,
-        retryDelay: options?.retryDelay ?? ((attemptIndex) => attemptIndex * 1000),
-        staleTime: options?.staleTime ?? 5 * 60 * 1000,
-        refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
-        refetchOnReconnect: options?.refetchOnReconnect ?? true,
-        gcTime: options?.gcTime ?? 5 * 60 * 1000,
+        retry: typeof options?.retry === 'number' ? options.retry : DEFAULT_QUERY_OPTIONS.retry,
+        retryDelay: retryDelay,
+        staleTime: typeof options?.staleTime === 'number' ? options.staleTime : DEFAULT_QUERY_OPTIONS.staleTime,
+        refetchOnWindowFocus: typeof options?.refetchOnWindowFocus === 'boolean' ? options.refetchOnWindowFocus : DEFAULT_QUERY_OPTIONS.refetchOnWindowFocus,
+        refetchOnReconnect: typeof options?.refetchOnReconnect === 'boolean' ? options.refetchOnReconnect : DEFAULT_QUERY_OPTIONS.refetchOnReconnect,
+        gcTime: typeof options?.gcTime === 'number' ? options.gcTime : DEFAULT_QUERY_OPTIONS.gcTime,
         enabled: options?.enabled ?? true,
         onSuccess: options?.onSuccess,
-        onError: (error: ApiError) => {
+        onError: (error: E) => {
           handleApiError(error);
           options?.onError?.(error);
         },
@@ -131,18 +124,23 @@ export const useApi = () => {
     );
   };
 
-  const useMutation = <T>(
+  const useMutation = <T, E extends ApiError = ApiError>(
     mutationFn: () => Promise<T>,
     options?: ApiRequestOptions<T>
   ) => {
-    return useMutation<T>(
+    const retryDelay: RetryDelayFunction = (attemptIndex: number, error: Error): number => {
+      const delayFn = typeof options?.retryDelay === 'function' ? options.retryDelay : DEFAULT_MUTATION_OPTIONS.retryDelay;
+      return typeof delayFn === 'function' ? delayFn(attemptIndex, error) : DEFAULT_MUTATION_OPTIONS.retryDelay(attemptIndex, error);
+    };
+
+    return useMutation<T, E>(
       mutationFn,
       {
-        retry: options?.retry ?? 2,
-        retryDelay: options?.retryDelay ?? ((attemptIndex) => attemptIndex * 1000),
-        gcTime: options?.gcTime ?? 5 * 60 * 1000,
+        retry: typeof options?.retry === 'number' ? options.retry : DEFAULT_MUTATION_OPTIONS.retry,
+        retryDelay: retryDelay,
+        gcTime: typeof options?.gcTime === 'number' ? options.gcTime : DEFAULT_MUTATION_OPTIONS.gcTime,
         onSuccess: options?.onSuccess,
-        onError: (error: ApiError) => {
+        onError: (error: E) => {
           handleApiError(error);
           options?.onError?.(error);
         },

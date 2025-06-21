@@ -1,12 +1,11 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Download, Trash2, Archive, CheckSquare, Square } from 'lucide-react';
-import { Snapshot } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Download, Trash2, Archive, CheckSquare, Square } from "lucide-react";
+import { Snapshot } from "@/utils/api";
+import { toast } from "@/hooks/use-toast";
 
 interface BulkOperationsProps {
   snapshots: Snapshot[];
@@ -16,34 +15,35 @@ interface BulkOperationsProps {
   onBulkDelete?: (snapshots: Snapshot[]) => void;
 }
 
-const BulkOperations = ({ 
-  snapshots, 
-  selectedSnapshots, 
-  onSelectionChange, 
+const BulkOperations = ({
+  snapshots,
+  selectedSnapshots,
+  onSelectionChange,
   onBulkExport,
-  onBulkDelete 
+  onBulkDelete,
 }: BulkOperationsProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const allSelected = snapshots.length > 0 && selectedSnapshots.length === snapshots.length;
+  const allSelected =
+    snapshots.length > 0 && selectedSnapshots.length === snapshots.length;
   const someSelected = selectedSnapshots.length > 0;
 
   const toggleSelectAll = () => {
     if (allSelected) {
       onSelectionChange([]);
     } else {
-      onSelectionChange(snapshots.map(s => s.timestamp));
+      onSelectionChange(snapshots.map((s) => s.timestamp));
     }
   };
 
   const getSelectedSnapshots = () => {
-    return snapshots.filter(s => selectedSnapshots.includes(s.timestamp));
+    return snapshots.filter((s) => selectedSnapshots.includes(s.timestamp));
   };
 
   const handleBulkExport = async () => {
     const selected = getSelectedSnapshots();
     if (selected.length === 0) return;
-    
+
     setIsProcessing(true);
     try {
       await onBulkExport(selected);
@@ -65,7 +65,7 @@ const BulkOperations = ({
   const handleBulkDelete = async () => {
     const selected = getSelectedSnapshots();
     if (selected.length === 0 || !onBulkDelete) return;
-    
+
     setIsProcessing(true);
     try {
       await onBulkDelete(selected);
@@ -100,13 +100,13 @@ const BulkOperations = ({
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Select All */}
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={toggleSelectAll}
             className="flex items-center gap-2"
           >
@@ -115,14 +115,14 @@ const BulkOperations = ({
             ) : (
               <Square className="h-4 w-4" />
             )}
-            {allSelected ? 'Deselect All' : 'Select All'}
+            {allSelected ? "Deselect All" : "Select All"}
           </Button>
         </div>
 
         {/* Bulk Actions */}
         {someSelected && (
           <div className="flex gap-2 pt-2 border-t">
-            <Button 
+            <Button
               onClick={handleBulkExport}
               disabled={isProcessing}
               size="sm"
@@ -131,9 +131,9 @@ const BulkOperations = ({
               <Download className="h-4 w-4" />
               Export ({selectedSnapshots.length})
             </Button>
-            
+
             {onBulkDelete && (
-              <Button 
+              <Button
                 onClick={handleBulkDelete}
                 disabled={isProcessing}
                 size="sm"
@@ -150,9 +150,10 @@ const BulkOperations = ({
         {/* Selection Info */}
         {someSelected && (
           <div className="text-sm text-muted-foreground pt-2 border-t">
-            Selected snapshots: {getSelectedSnapshots().map(s => 
-              new Date(s.timestamp).toLocaleDateString()
-            ).join(', ')}
+            Selected snapshots:{" "}
+            {getSelectedSnapshots()
+              .map((s) => new Date(s.timestamp).toLocaleDateString())
+              .join(", ")}
           </div>
         )}
       </CardContent>

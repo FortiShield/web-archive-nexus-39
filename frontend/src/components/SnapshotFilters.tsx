@@ -1,14 +1,23 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Filter, Calendar as CalendarIcon, X } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Filter, Calendar as CalendarIcon, X } from "lucide-react";
+import { format } from "date-fns";
 
 interface SnapshotFiltersProps {
   onFiltersChange: (filters: FilterOptions) => void;
@@ -22,11 +31,15 @@ export interface FilterOptions {
   searchContent?: string;
 }
 
-const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersProps) => {
+const SnapshotFilters = ({
+  onFiltersChange,
+  currentFilters,
+}: SnapshotFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>(
-    currentFilters.dateRange || { from: null, to: null }
-  );
+  const [dateRange, setDateRange] = useState<{
+    from: Date | null;
+    to: Date | null;
+  }>(currentFilters.dateRange || { from: null, to: null });
 
   const updateFilters = (newFilters: Partial<FilterOptions>) => {
     onFiltersChange({ ...currentFilters, ...newFilters });
@@ -54,25 +67,27 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
                 Clear
               </Button>
             )}
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsOpen(!isOpen)}
             >
-              {isOpen ? 'Hide' : 'Show'} Filters
+              {isOpen ? "Hide" : "Show"} Filters
             </Button>
           </div>
         </div>
       </CardHeader>
-      
+
       {isOpen && (
         <CardContent className="space-y-4">
           {/* Status Filter */}
           <div>
             <label className="text-sm font-medium mb-2 block">Status</label>
-            <Select 
-              value={currentFilters.status || ''} 
-              onValueChange={(value) => updateFilters({ status: value || undefined })}
+            <Select
+              value={currentFilters.status || ""}
+              onValueChange={(value) =>
+                updateFilters({ status: value || undefined })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All statuses" />
@@ -89,9 +104,11 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
           {/* Size Filter */}
           <div>
             <label className="text-sm font-medium mb-2 block">Size Range</label>
-            <Select 
-              value={currentFilters.size || ''} 
-              onValueChange={(value) => updateFilters({ size: value || undefined })}
+            <Select
+              value={currentFilters.size || ""}
+              onValueChange={(value) =>
+                updateFilters({ size: value || undefined })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All sizes" />
@@ -113,7 +130,9 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="flex-1 justify-start">
                     <CalendarIcon className="h-4 w-4 mr-2" />
-                    {dateRange.from ? format(dateRange.from, 'MMM dd, yyyy') : 'From date'}
+                    {dateRange.from
+                      ? format(dateRange.from, "MMM dd, yyyy")
+                      : "From date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -128,12 +147,14 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
                   />
                 </PopoverContent>
               </Popover>
-              
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="flex-1 justify-start">
                     <CalendarIcon className="h-4 w-4 mr-2" />
-                    {dateRange.to ? format(dateRange.to, 'MMM dd, yyyy') : 'To date'}
+                    {dateRange.to
+                      ? format(dateRange.to, "MMM dd, yyyy")
+                      : "To date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -153,11 +174,15 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
 
           {/* Content Search */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Search Content</label>
+            <label className="text-sm font-medium mb-2 block">
+              Search Content
+            </label>
             <Input
               placeholder="Search within archived content..."
-              value={currentFilters.searchContent || ''}
-              onChange={(e) => updateFilters({ searchContent: e.target.value || undefined })}
+              value={currentFilters.searchContent || ""}
+              onChange={(e) =>
+                updateFilters({ searchContent: e.target.value || undefined })
+              }
             />
           </div>
 
@@ -167,23 +192,27 @@ const SnapshotFilters = ({ onFiltersChange, currentFilters }: SnapshotFiltersPro
               <div className="text-sm font-medium mb-2">Active Filters:</div>
               <div className="flex flex-wrap gap-1">
                 {currentFilters.status && (
-                  <Badge variant="secondary">Status: {currentFilters.status}</Badge>
+                  <Badge variant="secondary">
+                    Status: {currentFilters.status}
+                  </Badge>
                 )}
                 {currentFilters.size && (
                   <Badge variant="secondary">Size: {currentFilters.size}</Badge>
                 )}
                 {currentFilters.dateRange?.from && (
                   <Badge variant="secondary">
-                    From: {format(currentFilters.dateRange.from, 'MMM dd')}
+                    From: {format(currentFilters.dateRange.from, "MMM dd")}
                   </Badge>
                 )}
                 {currentFilters.dateRange?.to && (
                   <Badge variant="secondary">
-                    To: {format(currentFilters.dateRange.to, 'MMM dd')}
+                    To: {format(currentFilters.dateRange.to, "MMM dd")}
                   </Badge>
                 )}
                 {currentFilters.searchContent && (
-                  <Badge variant="secondary">Search: {currentFilters.searchContent}</Badge>
+                  <Badge variant="secondary">
+                    Search: {currentFilters.searchContent}
+                  </Badge>
                 )}
               </div>
             </div>

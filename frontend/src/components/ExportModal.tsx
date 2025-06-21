@@ -1,13 +1,23 @@
-
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Download, FileText, Archive, Image } from 'lucide-react';
-import { Snapshot } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Download, FileText, Archive, Image } from "lucide-react";
+import { Snapshot } from "@/utils/api";
+import { toast } from "@/hooks/use-toast";
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -16,7 +26,7 @@ interface ExportModalProps {
 }
 
 interface ExportOptions {
-  format: 'zip' | 'json' | 'csv';
+  format: "zip" | "json" | "csv";
   includeMetadata: boolean;
   includeContent: boolean;
   includeImages: boolean;
@@ -24,7 +34,7 @@ interface ExportOptions {
 
 const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
   const [options, setOptions] = useState<ExportOptions>({
-    format: 'zip',
+    format: "zip",
     includeMetadata: true,
     includeContent: true,
     includeImages: false,
@@ -40,7 +50,7 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
       // Simulate export progress
       for (let i = 0; i <= 100; i += 10) {
         setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
 
       // Create export data based on format
@@ -49,57 +59,60 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
       let mimeType: string;
 
       switch (options.format) {
-        case 'json':
-          exportData = JSON.stringify({
-            snapshots: snapshots.map(s => ({
-              timestamp: s.timestamp,
-              url: s.url,
-              title: s.title,
-              status: s.status,
-              size: s.size,
-              ...(options.includeMetadata && { 
-                exportedAt: new Date().toISOString(),
-                exportOptions: options 
-              })
-            })),
-            totalCount: snapshots.length,
-            exportedAt: new Date().toISOString(),
-          }, null, 2);
-          filename = `snapshots-${new Date().toISOString().split('T')[0]}.json`;
-          mimeType = 'application/json';
+        case "json":
+          exportData = JSON.stringify(
+            {
+              snapshots: snapshots.map((s) => ({
+                timestamp: s.timestamp,
+                url: s.url,
+                title: s.title,
+                status: s.status,
+                size: s.size,
+                ...(options.includeMetadata && {
+                  exportedAt: new Date().toISOString(),
+                  exportOptions: options,
+                }),
+              })),
+              totalCount: snapshots.length,
+              exportedAt: new Date().toISOString(),
+            },
+            null,
+            2,
+          );
+          filename = `snapshots-${new Date().toISOString().split("T")[0]}.json`;
+          mimeType = "application/json";
           break;
 
-        case 'csv':
-          const headers = ['Timestamp', 'URL', 'Title', 'Status', 'Size'];
+        case "csv":
+          const headers = ["Timestamp", "URL", "Title", "Status", "Size"];
           const csvContent = [
-            headers.join(','),
-            ...snapshots.map(s => [
-              s.timestamp,
-              s.url,
-              s.title || '',
-              s.status,
-              s.size || ''
-            ].map(field => `"${field}"`).join(','))
-          ].join('\n');
+            headers.join(","),
+            ...snapshots.map((s) =>
+              [s.timestamp, s.url, s.title || "", s.status, s.size || ""]
+                .map((field) => `"${field}"`)
+                .join(","),
+            ),
+          ].join("\n");
           exportData = csvContent;
-          filename = `snapshots-${new Date().toISOString().split('T')[0]}.csv`;
-          mimeType = 'text/csv';
+          filename = `snapshots-${new Date().toISOString().split("T")[0]}.csv`;
+          mimeType = "text/csv";
           break;
 
         default:
           // For ZIP, we'll create a simple text file as a placeholder
-          exportData = `Archive Export - ${snapshots.length} snapshots\n\n` +
-            snapshots.map(s => 
-              `${s.timestamp}: ${s.title || s.url} (${s.status})`
-            ).join('\n');
-          filename = `snapshots-${new Date().toISOString().split('T')[0]}.txt`;
-          mimeType = 'text/plain';
+          exportData =
+            `Archive Export - ${snapshots.length} snapshots\n\n` +
+            snapshots
+              .map((s) => `${s.timestamp}: ${s.title || s.url} (${s.status})`)
+              .join("\n");
+          filename = `snapshots-${new Date().toISOString().split("T")[0]}.txt`;
+          mimeType = "text/plain";
       }
 
       // Create and download file
       const blob = new Blob([exportData], { type: mimeType });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -138,10 +151,12 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
         <div className="space-y-6">
           {/* Format Selection */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Export Format</label>
+            <label className="text-sm font-medium mb-2 block">
+              Export Format
+            </label>
             <Select
               value={options.format}
-              onValueChange={(value: 'zip' | 'json' | 'csv') => 
+              onValueChange={(value: "zip" | "json" | "csv") =>
                 setOptions({ ...options, format: value })
               }
             >
@@ -174,13 +189,16 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
           {/* Export Options */}
           <div className="space-y-3">
             <label className="text-sm font-medium">Include</label>
-            
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="metadata"
                 checked={options.includeMetadata}
-                onCheckedChange={(checked) => 
-                  setOptions({ ...options, includeMetadata: checked as boolean })
+                onCheckedChange={(checked) =>
+                  setOptions({
+                    ...options,
+                    includeMetadata: checked as boolean,
+                  })
                 }
               />
               <label htmlFor="metadata" className="text-sm">
@@ -192,7 +210,7 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
               <Checkbox
                 id="content"
                 checked={options.includeContent}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setOptions({ ...options, includeContent: checked as boolean })
                 }
               />
@@ -205,7 +223,7 @@ const ExportModal = ({ isOpen, onClose, snapshots }: ExportModalProps) => {
               <Checkbox
                 id="images"
                 checked={options.includeImages}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setOptions({ ...options, includeImages: checked as boolean })
                 }
               />

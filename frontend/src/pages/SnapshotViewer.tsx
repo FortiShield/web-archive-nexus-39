@@ -1,15 +1,17 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Calendar, ExternalLink } from 'lucide-react';
-import { archiveApi } from '@/utils/api';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Calendar, ExternalLink } from "lucide-react";
+import { archiveApi } from "@/utils/api";
 
 const SnapshotViewer = () => {
-  const { domain, timestamp } = useParams<{ domain: string; timestamp: string }>();
+  const { domain, timestamp } = useParams<{
+    domain: string;
+    timestamp: string;
+  }>();
   const navigate = useNavigate();
-  const [htmlContent, setHtmlContent] = useState<string>('');
+  const [htmlContent, setHtmlContent] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +25,10 @@ const SnapshotViewer = () => {
         const content = await archiveApi.getSnapshot(domain, timestamp);
         setHtmlContent(content);
       } catch (err) {
-        setError('Failed to load snapshot. Make sure the backend is running on http://localhost:8000');
-        console.error('Error:', err);
+        setError(
+          "Failed to load snapshot. Make sure the backend is running on http://localhost:8000",
+        );
+        console.error("Error:", err);
       } finally {
         setLoading(false);
       }
@@ -55,7 +59,10 @@ const SnapshotViewer = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={() => navigate(`/archive/${domain}`)}>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/archive/${domain}`)}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Archive
               </Button>
@@ -67,7 +74,7 @@ const SnapshotViewer = () => {
                 </div>
               </div>
             </div>
-            <Button variant="outline" onClick={() => navigate('/')}>
+            <Button variant="outline" onClick={() => navigate("/")}>
               <ExternalLink className="h-4 w-4 mr-2" />
               New Search
             </Button>

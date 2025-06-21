@@ -1,17 +1,23 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, Clock, ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
-import { archiveApi, Snapshot } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
-import SnapshotFilters, { FilterOptions } from '@/components/SnapshotFilters';
-import BulkOperations from '@/components/BulkOperations';
-import CalendarView from '@/components/CalendarView';
-import ExportModal from '@/components/ExportModal';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  ExternalLink,
+  LayoutGrid,
+  List as ListIcon,
+} from "lucide-react";
+import { archiveApi, Snapshot } from "@/utils/api";
+import { toast } from "@/hooks/use-toast";
+import SnapshotFilters, { FilterOptions } from "@/components/SnapshotFilters";
+import BulkOperations from "@/components/BulkOperations";
+import CalendarView from "@/components/CalendarView";
+import ExportModal from "@/components/ExportModal";
 
 const Archive = () => {
   const { domain } = useParams<{ domain: string }>();
@@ -23,7 +29,7 @@ const Archive = () => {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [selectedSnapshots, setSelectedSnapshots] = useState<string[]>([]);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   useEffect(() => {
     if (!domain) return;
@@ -36,8 +42,10 @@ const Archive = () => {
         setSnapshots(response.snapshots);
         setFilteredSnapshots(response.snapshots);
       } catch (err) {
-        setError('Failed to load snapshots. Make sure the backend is running on http://localhost:8000');
-        console.error('Error:', err);
+        setError(
+          "Failed to load snapshots. Make sure the backend is running on http://localhost:8000",
+        );
+        console.error("Error:", err);
       } finally {
         setLoading(false);
       }
@@ -52,29 +60,35 @@ const Archive = () => {
 
     // Status filter
     if (filters.status) {
-      filtered = filtered.filter(s => s.status === filters.status);
+      filtered = filtered.filter((s) => s.status === filters.status);
     }
 
     // Size filter
     if (filters.size) {
-      filtered = filtered.filter(s => {
+      filtered = filtered.filter((s) => {
         if (!s.size) return false;
         const sizeValue = parseFloat(s.size);
         switch (filters.size) {
-          case 'small': return sizeValue < 1;
-          case 'medium': return sizeValue >= 1 && sizeValue <= 5;
-          case 'large': return sizeValue > 5;
-          default: return true;
+          case "small":
+            return sizeValue < 1;
+          case "medium":
+            return sizeValue >= 1 && sizeValue <= 5;
+          case "large":
+            return sizeValue > 5;
+          default:
+            return true;
         }
       });
     }
 
     // Date range filter
     if (filters.dateRange?.from || filters.dateRange?.to) {
-      filtered = filtered.filter(s => {
+      filtered = filtered.filter((s) => {
         const snapshotDate = new Date(s.timestamp);
-        if (filters.dateRange?.from && snapshotDate < filters.dateRange.from) return false;
-        if (filters.dateRange?.to && snapshotDate > filters.dateRange.to) return false;
+        if (filters.dateRange?.from && snapshotDate < filters.dateRange.from)
+          return false;
+        if (filters.dateRange?.to && snapshotDate > filters.dateRange.to)
+          return false;
         return true;
       });
     }
@@ -82,9 +96,10 @@ const Archive = () => {
     // Content search filter (simulated)
     if (filters.searchContent) {
       const searchTerm = filters.searchContent.toLowerCase();
-      filtered = filtered.filter(s => 
-        s.title?.toLowerCase().includes(searchTerm) ||
-        s.url.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        (s) =>
+          s.title?.toLowerCase().includes(searchTerm) ||
+          s.url.toLowerCase().includes(searchTerm),
       );
     }
 
@@ -92,13 +107,13 @@ const Archive = () => {
   }, [filters, snapshots]);
 
   const handleViewSnapshot = (snapshot: Snapshot) => {
-    if (snapshot.status === 'completed') {
+    if (snapshot.status === "completed") {
       navigate(`/snapshot/${domain}/${snapshot.timestamp}`);
     } else {
       toast({
         title: "Snapshot unavailable",
         description: `This snapshot is ${snapshot.status}`,
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -113,14 +128,14 @@ const Archive = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'failed':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case "completed":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "processing":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "failed":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
@@ -139,14 +154,17 @@ const Archive = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" onClick={() => navigate('/')}>
+          <Button variant="outline" onClick={() => navigate("/")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Search
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Archive: {domain}</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Archive: {domain}
+            </h1>
             <p className="text-muted-foreground">
-              {filteredSnapshots.length} of {snapshots.length} snapshot{snapshots.length !== 1 ? 's' : ''} shown
+              {filteredSnapshots.length} of {snapshots.length} snapshot
+              {snapshots.length !== 1 ? "s" : ""} shown
             </p>
           </div>
         </div>
@@ -163,7 +181,7 @@ const Archive = () => {
           <>
             {/* Filters */}
             <div className="mb-6">
-              <SnapshotFilters 
+              <SnapshotFilters
                 onFiltersChange={setFilters}
                 currentFilters={filters}
               />
@@ -180,13 +198,21 @@ const Archive = () => {
             </div>
 
             {/* View Mode Tabs */}
-            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'calendar')}>
+            <Tabs
+              value={viewMode}
+              onValueChange={(value) =>
+                setViewMode(value as "list" | "calendar")
+              }
+            >
               <TabsList className="mb-6">
                 <TabsTrigger value="list" className="flex items-center gap-2">
                   <ListIcon className="h-4 w-4" />
                   List View
                 </TabsTrigger>
-                <TabsTrigger value="calendar" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="calendar"
+                  className="flex items-center gap-2"
+                >
                   <LayoutGrid className="h-4 w-4" />
                   Calendar View
                 </TabsTrigger>
@@ -197,12 +223,13 @@ const Archive = () => {
                   <Card className="text-center py-12">
                     <CardContent>
                       <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No snapshots found</h3>
+                      <h3 className="text-lg font-semibold mb-2">
+                        No snapshots found
+                      </h3>
                       <p className="text-muted-foreground">
-                        {snapshots.length === 0 
+                        {snapshots.length === 0
                           ? `No archived versions found for ${domain}`
-                          : 'No snapshots match your current filters'
-                        }
+                          : "No snapshots match your current filters"}
                       </p>
                     </CardContent>
                   </Card>
@@ -213,17 +240,24 @@ const Archive = () => {
                       Timeline
                     </h2>
                     {filteredSnapshots.map((snapshot, index) => (
-                      <Card key={index} className="hover:shadow-md transition-shadow">
+                      <Card
+                        key={index}
+                        className="hover:shadow-md transition-shadow"
+                      >
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-3 flex-1">
                               <input
                                 type="checkbox"
-                                checked={selectedSnapshots.includes(snapshot.timestamp)}
+                                checked={selectedSnapshots.includes(
+                                  snapshot.timestamp,
+                                )}
                                 onChange={(e) => {
                                   const newSelection = e.target.checked
                                     ? [...selectedSnapshots, snapshot.timestamp]
-                                    : selectedSnapshots.filter(t => t !== snapshot.timestamp);
+                                    : selectedSnapshots.filter(
+                                        (t) => t !== snapshot.timestamp,
+                                      );
                                   setSelectedSnapshots(newSelection);
                                 }}
                                 className="mt-1"
@@ -233,11 +267,15 @@ const Archive = () => {
                                   <h3 className="font-medium text-foreground">
                                     {snapshot.title || domain}
                                   </h3>
-                                  <Badge className={getStatusColor(snapshot.status)}>
+                                  <Badge
+                                    className={getStatusColor(snapshot.status)}
+                                  >
                                     {snapshot.status}
                                   </Badge>
                                   {snapshot.size && (
-                                    <Badge variant="secondary">{snapshot.size}</Badge>
+                                    <Badge variant="secondary">
+                                      {snapshot.size}
+                                    </Badge>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -251,7 +289,7 @@ const Archive = () => {
                             </div>
                             <Button
                               onClick={() => handleViewSnapshot(snapshot)}
-                              disabled={snapshot.status !== 'completed'}
+                              disabled={snapshot.status !== "completed"}
                               className="ml-4"
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
@@ -281,7 +319,9 @@ const Archive = () => {
         <ExportModal
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
-          snapshots={filteredSnapshots.filter(s => selectedSnapshots.includes(s.timestamp))}
+          snapshots={filteredSnapshots.filter((s) =>
+            selectedSnapshots.includes(s.timestamp),
+          )}
         />
       </div>
     </div>

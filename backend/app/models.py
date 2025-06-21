@@ -1,11 +1,11 @@
-
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean
 from sqlalchemy.sql import func
 from app.database import Base
 
+
 class Snapshot(Base):
     __tablename__ = "snapshots"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     domain = Column(String, index=True)
     url = Column(String)
