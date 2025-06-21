@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { QueryClient, useQuery, useMutation, useQueryClient, QueryObserverOptions, UseMutationOptions } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -34,7 +34,6 @@ type ApiRequestOptions<T = any> = {
 };
 
 // Define API error types
-// Define API error types
 export interface ApiError extends Error {
   name: string;
   message: string;
@@ -60,8 +59,7 @@ const DEFAULT_MUTATION_OPTIONS: Partial<UseMutationOptions> = {
 
 export const queryClient = new QueryClient({
   defaultOptions: {
-    queries: DEFAULT_QUERY_OPTIONS,
-    mutations: DEFAULT_MUTATION_OPTIONS,
+    queries: {
       retry: 2,
       retryDelay: (attemptIndex: number) => attemptIndex * 1000,
       staleTime: 5 * 60 * 1000,
@@ -88,12 +86,11 @@ export const useApi = () => {
     queryKey: string[],
     fetchFn: () => Promise<T>,
     options?: ApiRequestOptions<T>
-  ) => {
+  ): Promise<T> => {
     try {
-      const data = await fetchFn();
-      return data;
+      return await fetchFn();
     } catch (error) {
-      throw error;
+      throw error as ApiError;
     }
   }, []);
 
@@ -114,17 +111,16 @@ export const useApi = () => {
     fetchFn: () => Promise<T>,
     options?: ApiRequestOptions<T>
   ) => {
-    return useQuery<T, ApiError>(
+    return useQuery<T>(
       queryKey,
       () => queryFn(queryKey, fetchFn, options),
       {
-        ...options?.queryOptions,
-        retry: options?.retry ?? DEFAULT_QUERY_OPTIONS.retry,
-        retryDelay: options?.retryDelay ?? DEFAULT_QUERY_OPTIONS.retryDelay,
-        staleTime: options?.staleTime ?? DEFAULT_QUERY_OPTIONS.staleTime,
-        refetchOnWindowFocus: options?.refetchOnWindowFocus ?? DEFAULT_QUERY_OPTIONS.refetchOnWindowFocus,
-        refetchOnReconnect: options?.refetchOnReconnect ?? DEFAULT_QUERY_OPTIONS.refetchOnReconnect,
-        gcTime: options?.gcTime ?? DEFAULT_QUERY_OPTIONS.gcTime,
+        retry: options?.retry ?? 2,
+        retryDelay: options?.retryDelay ?? ((attemptIndex) => attemptIndex * 1000),
+        staleTime: options?.staleTime ?? 5 * 60 * 1000,
+        refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
+        refetchOnReconnect: options?.refetchOnReconnect ?? true,
+        gcTime: options?.gcTime ?? 5 * 60 * 1000,
         enabled: options?.enabled ?? true,
         onSuccess: options?.onSuccess,
         onError: (error: ApiError) => {
@@ -139,13 +135,12 @@ export const useApi = () => {
     mutationFn: () => Promise<T>,
     options?: ApiRequestOptions<T>
   ) => {
-    return useMutation<T, ApiError>(
+    return useMutation<T>(
       mutationFn,
       {
-        ...options?.mutationOptions,
-        retry: options?.retry ?? DEFAULT_MUTATION_OPTIONS.retry,
-        retryDelay: options?.retryDelay ?? DEFAULT_MUTATION_OPTIONS.retryDelay,
-        gcTime: options?.gcTime ?? DEFAULT_MUTATION_OPTIONS.gcTime,
+        retry: options?.retry ?? 2,
+        retryDelay: options?.retryDelay ?? ((attemptIndex) => attemptIndex * 1000),
+        gcTime: options?.gcTime ?? 5 * 60 * 1000,
         onSuccess: options?.onSuccess,
         onError: (error: ApiError) => {
           handleApiError(error);
@@ -157,7 +152,7 @@ export const useApi = () => {
 
   const invalidateQueries = useCallback(
     (queryKeys: string[]) => {
-      queryClient.invalidateQueries(queryKeys);
+      queryClient.invalidateQueries({ queryKey: queryKeys });
     },
     [queryClient]
   );
